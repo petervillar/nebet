@@ -165,10 +165,12 @@ LOT     20      noun
 EVERY   20      noun
 ;
 LAMP	50	noun	; an oil lamp
-JAR	51	noun	; water jar
+JUG	51	noun	; the water/beer jug
 GOWN	52	noun	; white gown
 STATU	53	noun	; sobek's statuette
 SANDA	54	noun	; pair of sandals
+BAG	55	noun	; a linen bag
+BOARD	56	noun	; senet board
 ;
 ;                       Verbs
 ;
@@ -261,8 +263,10 @@ I am wearing
 /11 ;*Spare
 /12
 Are you sure? 
+
 /13
 Would you like another go? 
+
 /14 ;*Spare
 /15
 OK.
@@ -388,19 +392,19 @@ Tape or Disc?
 ;------------------------------------------------------------------------------
 /OTX    ;Object Texts
 /0
-an oil lamp (unlit)
-/1
-an oil lamp (lit)
-/2
-a water jar (full)
-/3
-a water jar (empty)
-/4
 a white gown
-/5
+/1
+a linen bag
+/2
 a statuette
-/6
+/3
 a pair of sandals
+/4
+a jug (empty)
+/5
+a jug (full)
+/6
+a senet board
 ;------------------------------------------------------------------------------
 /LTX    ;Location Texts
 /0
@@ -425,19 +429,49 @@ to the city of Shedet, your destination..
 
 
 /1
-This is an east-west path that wanders between the outskirts of
-the town and lake Moeris.
+; inside the bag
 /2
+Shedet, the old city, lies in front of you.
+/3
+The city of Shedet, where its busy inhabitants jostle and bustle
+about their business.
+/4
+This street is less crowded and more colourful. The street continues
+to the north-west and opens up into a square.
+/5
+A small and secluded square, almost empty at any time of the day.
+/6
+Rows of stalls with signs proclaiming the goods they sell, the
+shopkeepers shouting at everyone.
+/7
+A tavern furnished with mats and stools, where customers sitting
+side-by-side drink beer and wine.
+/8
+A clean path that leads to the pharaoh's palace.
+/9
+A stunningly beautiful temple, dedicated to the Son of Soukhos.
+/10
+Inside the temple there is a special pond.
+/11
+A flight of steep stone stairs leads up to the pharaoh's palace.
+/12
+Inside the huge reception area.
+/13
+This is an north-south path that wanders between the outskirts of
+the town and lake Moeris.
+/14
 The lake extends into the background, in the middle of the otherwise
 desolate desert. A dusty path leads to the west to a temple.
-/3
+/15
+Swimming in the calm waters of lake Moeris.
+/16
 The entrance to the temple features large stone pillars, which
 support a roof of huge stone slabs. A path to the east descends
 to the lakeshore.
-/4
+/17
 The interior of the temple is decorated with texts and reliefs,
 which refer to cultic liturgies.
-/5
+/18
 This is the hidden room, where the most precious and sacred artifacts
 of the cult are preserved. There is a stone altar in the middle of the
 room, dedicated to the god Sobek.
@@ -445,30 +479,67 @@ room, dedicated to the god Sobek.
 /CON    ;Connections
 /0
 /1
-W 2
 /2
-E 1
 W 3
 /3
 E 2
-D 2
-S 4
+S 6
+W 4
 /4
-N 3
-D 5
+E 3
+NW 5
 /5
-U 4
+SE 4
+N 13
+/6
+N 3
+W 7
+S 8
+SW 9
+/7
+E 6
+/8
+N 6
+S 11
+/9
+E 6
+NE 6
+W 10
+/10
+E 9
+/11
+N 8
+U 12
+/12
+D 11
+/13
+S 5
+N 14
+/14
+N 15
+W 16
+S 13
+/15
+S 14
+/16
+E 14
+W 17
+/17
+E 16
+D 18
+/18
+U 17
 ;------------------------------------------------------------------------------
 /OBJ    ;Object Definitions
 ;obj  starts  weight    c w  5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0    noun	adjective
 ;num    at
-/0      CARRIED 1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    LAMP	UNLIT
-/1      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    LAMP	LIT
-/2      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JAR	FULL
-/3      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JAR	EMPTY
-/4      WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    GOWN	_
-/5      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    STATU	_
-/6      WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    SANDA	_
+/0      WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    GOWN	_
+/1      CARRIED	1       Y _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BAG	_IT
+/2      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    STATU	_
+/3      WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    SANDA	_
+/4      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	EMPTY
+/5      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	FULL
+/6      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BOARD	_
 ;------------------------------------------------------------------------------
 /PRO 0       ;Main Location Loop
 
@@ -641,5 +712,5 @@ _       _       RESET                   ; Set objects to start location & Flag 1
                 SET     CPNoun
                 SET     CPAdject
 		LET	53	64	; object lists printed as sentences.
-                GOTO    1               ; Main game
+                GOTO    2               ; Main game
 
