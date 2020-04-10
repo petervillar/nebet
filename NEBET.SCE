@@ -1,6 +1,20 @@
 ; NEBET.SCE
 ;
+; Flags:
+; 30 - Score
+; 64 - 0 beer, 255 water
 ;------------------------------------------------------------------------------
+; Data definitions
+;
+#define gown	0
+#define bag	gown+1
+#define statuette	bag+1
+#define sandals		statuette+1
+#define jugempty	sandals+1
+#define jugfull		jugempty+1
+#define	board		jugfull+1
+#define	meat		board+1
+;
 ;
 ;
 #include symbols.sce
@@ -164,13 +178,23 @@ ALL     20      noun
 LOT     20      noun
 EVERY   20      noun
 ;
-LAMP	50	noun	; an oil lamp
-JUG	51	noun	; the water/beer jug
-GOWN	52	noun	; white gown
-STATU	53	noun	; sobek's statuette
-SANDA	54	noun	; pair of sandals
-BAG	55	noun	; a linen bag
-BOARD	56	noun	; senet board
+PEASA	21	noun		; peasant at the tavern
+;
+LAMP	50	noun		; an oil lamp
+JUG	51	noun		; the water/beer jug
+GOWN	52	noun		; white gown
+STATU	53	noun		; sobek's statuette
+SANDA	54	noun		; pair of sandals
+BAG	55	noun		; a linen bag
+SENET	56	noun		; senet board
+BOARD	56	noun		; senet board
+BOY	57	noun		; boy who owns dokey
+LAD	57	noun		; boy who owns dokey
+DONKE	58	noun		; donkey
+CROCO	59	noun		; lake and temple
+SOBEK	60	noun		; god of much power
+MEAT	61	noun		; piece of dried meat
+ALTAR	62	noun		; in the hidden room
 ;
 ;                       Verbs
 ;
@@ -189,12 +213,16 @@ SAVE    26      verb
 LOAD    27      verb
 RAMSA   28      verb
 RAMLO   29      verb
-LOOK    30      verb
+;LOOK    30      verb
 EXAMI   30      verb
+X	30      verb
 SAY     31      verb
 ASK     31      verb
 TALK    31      verb
 SPEAK   31      verb
+DRINK	32	verb
+EAT	33	verb
+PRAY	34	verb
 ;                               Adjectives
 SMALL   2       adjective
 BIG     3       adjective
@@ -242,6 +270,7 @@ THEN    2       conjugation
 /0
 It's too dark to see anything.
 /1
+
 I can also see 
 /2
 /3
@@ -308,8 +337,10 @@ N
 /32
 More...
 /33
-> 
+
+>\s
 /34 ;*Spare
+ al\s
 /35
 
 Time passes...
@@ -389,39 +420,103 @@ Tape or Disc?
 ;------------------------------------------------------------------------------
 /MTX    ;Message Texts
 /0
+/1
+/2
+Outside Shedet
+/3
+Streets of Shedet
+/4
+Streets of Shedet
+/5
+A small square
+/6
+Marketplace
+/7
+Tavern
+/8
+Path
+/9
+Temple of Soukhos
+/10
+Inside the Temple
+/11
+Entrance
+/12
+Palace
+/13
+Path
+/14
+Lake shore
+/15
+Lake Moeris
+/16
+Entrance
+/17
+Inside the Temple
+/18
+Hidden room
+/19
+/20
+/21
+\/12
+;
+; Examine messages
+;
+#define ExamineM 22
+/ExamineM
+Nothing of interest.
+/ExamineM+1
+It is a simple jug with pointed base and cylindrical neck. It contains 
+/ExamineM+2
+water.
+/ExamineM+3
+beer.
+/ExamineM+4
+A pair of rawhide sandals, which have seen prolonged wear.
+/ExamineM+5
+It is a terracotta statuette in the shape of a crocodile.
+/ExamineM+6
+The gown is white and fairly plain.
+/ExamineM+7
+nothing.
+/ExamineM+8
+It is made from one piece of stone, and is probably used for worshipping ceremonies.
 ;------------------------------------------------------------------------------
 /OTX    ;Object Texts
-/0
+/gown
 a white gown
-/1
+/bag
 a linen bag
-/2
+/statuette
 a statuette
-/3
+/sandals
 a pair of sandals
-/4
+/jugempty
 a jug (empty)
-/5
+/jugfull
 a jug (full)
-/6
+/board
 a senet board
+/meat
+a piece of dried meat
 ;------------------------------------------------------------------------------
 /LTX    ;Location Texts
 /0
 
 
-
-
+#if PC
+               The Priestess of Sobek
+#endif
+#if SPE
            The Priestess of Sobek
+#endif
 
 
 
 You are Nebet, the daughter of a poor farmer who has
 embarked on a journey to seek help from Sobek, the
-god of the Nile, to save your village in this time
+crocodile-god, to save your village in this time
 of severe drought.
-
-
 
 
 After a long and tiring journey, you finally arrive
@@ -535,16 +630,19 @@ U 17
 ;num    at
 /0      WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    GOWN	_
 /1      CARRIED	1       Y _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BAG	_IT
-/2      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    STATU	_
+/2      10	1       Y _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    STATU	_
 /3      WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    SANDA	_
 /4      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	EMPTY
-/5      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	FULL
-/6      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BOARD	_
+/5      CARRIED	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	FULL
+/6      7	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BOARD	_
+/7      6	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    MEAT	_
 ;------------------------------------------------------------------------------
 /PRO 0       ;Main Location Loop
 
 _       _       AT      0               ; Starting game
                 PROCESS 6               ; then we need init sequence
+
+_	_	PROCESS	7		; Status stuff
 
 _       _       WINDOW  0               ; Select graphics window
                 CLEAR   DarkF           ; Assume light
@@ -559,11 +657,13 @@ _       _       PICTURE [Player]        ; If there is a picture, Load it
                 DISPLAY [DarkF]         ; & Display it if not dark, else CLS
 
 _       _       WINDOW  1
+		WINAT	2	0
                 NOTZERO DarkF           ; Dark
                 SYSMESS 0
 
 _       _       ZERO    DarkF
                 DESC    [Player]        ; Doesn't exit loop now
+;		NEWLINE
 
 _       _       PROCESS 3
 
@@ -627,8 +727,8 @@ _       _       SYSMESS 6               ; I didn't understand
 
 ;This is better carried out thus
 _       _       NEWLINE
-                ZERO    DarkF            ; Isn't dark
-		NEWLINE
+		ZERO    DarkF            ; Isn't dark
+;		NEWLINE
                 LISTOBJ
 
 ;than the old system needed in Version 1, without accesss to DarkF
@@ -647,6 +747,7 @@ _       _       NEWLINE
 
 I       _       SYSMESS 9
                 LISTAT  CARRIED
+		NEWLINE
                 SYSMESS 10
                 LISTAT  WORN
                 DONE
@@ -667,6 +768,8 @@ WEAR    ALL     DOALL   CARRIED
 WEAR    _       AUTOW
                 DONE
 
+EXAMI	_	PROCESS	8
+
 R       _       RESTART
 
 QUIT    _       QUIT
@@ -686,12 +789,12 @@ RAMSA   _       RAMSAVE
 RAMLO   _       RAMLOAD 255             ;Reload all flags
                 RESTART
 
-LOOK    _       RESTART
+R	_       RESTART
 ;------------------------------------------------------------------------------
 /PRO 6 ; Initialise the DAAD system
 
 _       _       WINDOW  1               ; Windows are random
-_       _       WINAT   0       0
+_       _       WINAT   2       0
                 WINSIZE 25      127     ; Maximum window
                 CLS
                 DESC    0               ; Introduction
@@ -713,4 +816,63 @@ _       _       RESET                   ; Set objects to start location & Flag 1
                 SET     CPAdject
 		LET	53	64	; object lists printed as sentences.
                 GOTO    2               ; Main game
+
+;------------------------------------------------------------------------------
+
+/PRO 7 ; print status
+
+_	_	WINDOW	2
+		CLS
+		WINAT	0	0
+		MES	[38]
+#if SPE
+                PRINTAT 0 36
+#endif
+#if CBM64
+                PRINTAT 0 34
+#endif
+#if PC
+                PRINTAT 0 48
+#endif
+                PRINT   30		; traditional score flag
+                MES     21		; "/12"
+
+;------------------------------------------------------------------------------
+
+/PRO 8 ; examine things
+
+EXAMI	JUG	CARRIED	jugfull		; jug
+		ZERO	64		; beer?
+		MES	ExamineM+1	; the jug contains
+		MESSAGE	ExamineM+3	; beer
+		DONE
+
+EXAMI	JUG	CARRIED	jugfull		; must be water then
+		MES	ExamineM+1	; the jug contains
+		MESSAGE	ExamineM+2	; water
+		DONE
+
+EXAMI	JUG	CARRIED	jugempty	; must be water then
+		MES	ExamineM+1	; the jug contains
+		MESSAGE	ExamineM+7	; nothing
+		DONE
+
+EXAMI	SANDA	PRESENT	sandals
+		MESSAGE	ExamineM+4
+		DONE
+
+EXAMI	STATU	PRESENT	statuette
+		MESSAGE	ExamineM+5
+		DONE
+
+EXAMI	GOWN	PRESENT	gown
+		MESSAGE	ExamineM+6
+		DONE
+
+EXAMI	ALTAR	AT	18		; hidden room
+		MESSAGE	ExamineM+8
+		DONE
+
+EXAMI	_	MESSAGE	ExamineM	; Nothing of interest
+		DONE
 
