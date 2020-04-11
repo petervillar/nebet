@@ -464,7 +464,7 @@ Hidden room
 ;
 #define ExamineM 22
 /ExamineM
-Nothing of interest.
+You do not see anything remarkable.
 /ExamineM+1
 It is a simple jug with pointed base and cylindrical neck. It contains 
 /ExamineM+2
@@ -481,6 +481,14 @@ The gown is white and fairly plain.
 nothing.
 /ExamineM+8
 It is made from one piece of stone, and is probably used for worshipping ceremonies.
+/ExamineM+9
+In the bag there is 
+/ExamineM+10
+A coarse linen bag.
+;
+; Action messages
+;
+#define ActionM	ExamineM+10
 ;------------------------------------------------------------------------------
 /OTX    ;Object Texts
 /gown
@@ -626,16 +634,16 @@ D 18
 U 17
 ;------------------------------------------------------------------------------
 /OBJ    ;Object Definitions
-;obj  starts  weight    c w  5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0    noun	adjective
-;num    at
-/0      WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    GOWN	_
-/1      CARRIED	1       Y _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BAG	_IT
-/2      10	1       Y _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    STATU	_
-/3      WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    SANDA	_
-/4      252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	EMPTY
-/5      CARRIED	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	FULL
-/6      7	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BOARD	_
-/7      6	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    MEAT	_
+;obj  		starts  weight  c w  5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0    noun	adjective
+;num    	at
+/gown      	WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    GOWN	_
+/bag      	CARRIED	1       Y _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BAG	_
+/statuette      10	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    STATU	_
+/sandals      	WORN	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    SANDA	_
+/jugempty      	252	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	EMPTY
+/jugfull      	bag	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	FULL
+/board      	7	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BOARD	_
+/meat      	6	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    MEAT	_
 ;------------------------------------------------------------------------------
 /PRO 0       ;Main Location Loop
 
@@ -752,11 +760,21 @@ I       _       SYSMESS 9
                 LISTAT  WORN
                 DONE
 
+GET	ALL	NOUN2	BAG
+		DOALL	bag
 GET     ALL     DOALL   HERE
+GET	_	NOUN2	BAG
+		PRESENT	bag
+		AUTOT	bag
+		DONE
 GET     _       AUTOG
                 DONE
 
 DROP    ALL     DOALL   CARRIED
+DROP	_	NOUN2	BAG
+		PRESENT	bag
+		AUTOP	bag
+		DONE
 DROP    _       AUTOD
                 DONE
 
@@ -871,6 +889,16 @@ EXAMI	GOWN	PRESENT	gown
 
 EXAMI	ALTAR	AT	18		; hidden room
 		MESSAGE	ExamineM+8
+		DONE
+
+EXAMI	BAG	PREP	IN
+		PRESENT	bag
+		MES	ExamineM+9	; in the bag there is
+		LISTAT	bag
+		DONE
+
+EXAMI	BAG	PRESENT	bag
+		MESSAGE	ExamineM+10
 		DONE
 
 EXAMI	_	MESSAGE	ExamineM	; Nothing of interest
