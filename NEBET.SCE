@@ -3,6 +3,8 @@
 ; Flags:
 ; 30 - Score
 ; 64 - 0 beer, 255 water
+; 65 - 0 no priestess, 255 priestess
+; 66 - 0 no talked to Pharaoh, 255 blessed by Pharaoh
 ;------------------------------------------------------------------------------
 ; Data definitions
 ;
@@ -223,6 +225,7 @@ SPEAK   31      verb
 DRINK	32	verb
 EAT	33	verb
 PRAY	34	verb
+WORSH	34	verb
 ;                               Adjectives
 SMALL   2       adjective
 BIG     3       adjective
@@ -456,39 +459,62 @@ Inside the Temple
 /18
 Hidden room
 /19
+Path
 /20
+East road
 /21
 \/12
 ;
 ; Examine messages
 ;
-#define ExamineM 22
-/ExamineM
+#define mExam 22
+/mExam
 You do not see anything remarkable.
-/ExamineM+1
+/mExam+1
 It is a simple jug with pointed base and cylindrical neck. It contains 
-/ExamineM+2
+/mExam+2
 water.
-/ExamineM+3
+/mExam+3
 beer.
-/ExamineM+4
+/mExam+4
 A pair of rawhide sandals, which have seen prolonged wear.
-/ExamineM+5
+/mExam+5
 It is a terracotta statuette in the shape of a crocodile.
-/ExamineM+6
+/mExam+6
 The gown is white and fairly plain.
-/ExamineM+7
+/mExam+7
 nothing.
-/ExamineM+8
+/mExam+8
 It is made from one piece of stone, and is probably used for worshipping ceremonies.
-/ExamineM+9
+/mExam+9
 In the bag there is 
-/ExamineM+10
+/mExam+10
 A coarse linen bag.
 ;
 ; Action messages
 ;
-#define ActionM	ExamineM+10
+#define mAction	mExam+11
+/mAction
+You sit down and worship Sobek-Ra, as your parents have taught you..
+/mAction+1
+A voice inside of you head talks to you: "I accept your worship and
+I am well pleased, Nebet the priestess."
+#define mInfo mAction+2
+/mInfo
+If you return now, priestess, your journey will have been a pointless
+endeavor.
+/mInfo+1
+You consider returning home to your family and to an incertain future,
+but something very powerful is making you stay.
+/mInfo+2
+You return to your home village, back to your family and your people.
+
+
+Even though you feel welcome, and everybody is grateful for having a
+priestess in the village, you know they had their hopes on you.
+
+
+And somehow, you failed them..
 ;------------------------------------------------------------------------------
 /OTX    ;Object Texts
 /gown
@@ -542,7 +568,7 @@ about their business.
 This street is less crowded and more colourful. The street continues
 to the north-west and opens up into a square.
 /5
-A small and secluded square, almost empty at any time of the day.
+A small, secluded and pleasantly empty square.
 /6
 Rows of stalls with signs proclaiming the goods they sell, the
 shopkeepers shouting at everyone.
@@ -554,7 +580,7 @@ A clean path that leads to the pharaoh's palace.
 /9
 A stunningly beautiful temple, dedicated to the Son of Soukhos.
 /10
-Inside the temple there is a special pond.
+A pond in the middle of the building attracts your attention.
 /11
 A flight of steep stone stairs leads up to the pharaoh's palace.
 /12
@@ -578,12 +604,19 @@ which refer to cultic liturgies.
 This is the hidden room, where the most precious and sacred artifacts
 of the cult are preserved. There is a stone altar in the middle of the
 room, dedicated to the god Sobek.
+/19
+This is an north-south path that wanders between lake Moeris and the
+outskirts of the town.
+/20
+This is the road that leads towards the Nile river, to the east, where
+your journey started.
 ;------------------------------------------------------------------------------
 /CON    ;Connections
 /0
 /1
 /2
 W 3
+E 20
 /3
 E 2
 S 6
@@ -617,11 +650,11 @@ U 12
 D 11
 /13
 S 5
-N 14
+N 19
 /14
 N 15
 W 16
-S 13
+S 19
 /15
 S 14
 /16
@@ -632,6 +665,11 @@ E 16
 D 18
 /18
 U 17
+/19
+N 14
+S 13
+/20
+W 2
 ;------------------------------------------------------------------------------
 /OBJ    ;Object Definitions
 ;obj  		starts  weight  c w  5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0    noun	adjective
@@ -649,8 +687,6 @@ U 17
 
 _       _       AT      0               ; Starting game
                 PROCESS 6               ; then we need init sequence
-
-_	_	PROCESS	7		; Status stuff
 
 _       _       WINDOW  0               ; Select graphics window
                 CLEAR   DarkF           ; Assume light
@@ -670,8 +706,11 @@ _       _       WINDOW  1
                 SYSMESS 0
 
 _       _       ZERO    DarkF
+		CLS
                 DESC    [Player]        ; Doesn't exit loop now
 ;		NEWLINE
+
+_	_	PROCESS	7		; Status stuff
 
 _       _       PROCESS 3
 
@@ -748,6 +787,13 @@ _       _       NEWLINE
 ;_       _       PRESENT 0               ;If the light source is present...
 ;                LISTOBJ                 ;List the objects
 
+; End game
+_	_	AT	20		; long path towards the Nile
+		NOTZERO	65		; Is Nebet a priest?
+		ZERO	66		; not talked to Pharaoh
+		NEWLINE
+		MESSAGE	mInfo		; "if you return, yor mission will have failed etc.."
+
 ;------------------------------------------------------------------------------
 /PRO 4 ; Old process 2
 ;------------------------------------------------------------------------------
@@ -759,6 +805,17 @@ I       _       SYSMESS 9
                 SYSMESS 10
                 LISTAT  WORN
                 DONE
+
+_	EAST	AT	20
+		NOTZERO	65		; Nebet is a priestess
+		NEWLINE
+		MESSAGE	mInfo+2		; sad end
+		NEWLINE
+		END
+
+_	EAST	AT	20
+		MESSAGE	mInfo+1		; something strong makes you stay
+		DONE
 
 GET	ALL	NOUN2	BAG
 		DOALL	bag
@@ -787,6 +844,8 @@ WEAR    _       AUTOW
                 DONE
 
 EXAMI	_	PROCESS	8
+
+WORSH	_	PROCESS	9
 
 R       _       RESTART
 
@@ -840,7 +899,6 @@ _       _       RESET                   ; Set objects to start location & Flag 1
 /PRO 7 ; print status
 
 _	_	WINDOW	2
-		CLS
 		WINAT	0	0
 		MES	[38]
 #if SPE
@@ -852,8 +910,9 @@ _	_	WINDOW	2
 #if PC
                 PRINTAT 0 48
 #endif
-                PRINT   30		; traditional score flag
+                PRINT   Score
                 MES     21		; "/12"
+		WINDOW	1
 
 ;------------------------------------------------------------------------------
 
@@ -861,46 +920,67 @@ _	_	WINDOW	2
 
 EXAMI	JUG	CARRIED	jugfull		; jug
 		ZERO	64		; beer?
-		MES	ExamineM+1	; the jug contains
-		MESSAGE	ExamineM+3	; beer
+		MES	mExam+1	; the jug contains
+		MESSAGE	mExam+3	; beer
 		DONE
 
 EXAMI	JUG	CARRIED	jugfull		; must be water then
-		MES	ExamineM+1	; the jug contains
-		MESSAGE	ExamineM+2	; water
+		MES	mExam+1	; the jug contains
+		MESSAGE	mExam+2	; water
 		DONE
 
 EXAMI	JUG	CARRIED	jugempty	; must be water then
-		MES	ExamineM+1	; the jug contains
-		MESSAGE	ExamineM+7	; nothing
+		MES	mExam+1	; the jug contains
+		MESSAGE	mExam+7	; nothing
 		DONE
 
 EXAMI	SANDA	PRESENT	sandals
-		MESSAGE	ExamineM+4
+		MESSAGE	mExam+4
 		DONE
 
 EXAMI	STATU	PRESENT	statuette
-		MESSAGE	ExamineM+5
+		MESSAGE	mExam+5
 		DONE
 
 EXAMI	GOWN	PRESENT	gown
-		MESSAGE	ExamineM+6
+		MESSAGE	mExam+6
 		DONE
 
 EXAMI	ALTAR	AT	18		; hidden room
-		MESSAGE	ExamineM+8
+		MESSAGE	mExam+8
 		DONE
 
 EXAMI	BAG	PREP	IN
 		PRESENT	bag
-		MES	ExamineM+9	; in the bag there is
+		MES	mExam+9	; in the bag there is
 		LISTAT	bag
 		DONE
 
 EXAMI	BAG	PRESENT	bag
-		MESSAGE	ExamineM+10
+		MESSAGE	mExam+10
 		DONE
 
-EXAMI	_	MESSAGE	ExamineM	; Nothing of interest
+EXAMI	_	MESSAGE	mExam	; Nothing of interest
 		DONE
+
+;------------------------------------------------------------------------------
+
+/PRO 9 ; on worshipping 
+
+WORSH	_	ZERO	65		; not yet a priest
+		AT	18		; at the secret chamber
+		MESSAGE	mAction
+		PAUSE	250
+		NEWLINE
+		MESSAGE	mAction+1
+		SET	65		; Nebet accepted as a priest
+		PLUS	Score	2	; deux points
+		PROCESS	7
+		DONE
+
+WORSH	_	NOTAT	15		; not while swimming
+		MESSAGE	mAction
+		DONE
+
+
 
