@@ -181,6 +181,7 @@ LOT     20      noun
 EVERY   20      noun
 ;
 PEASA	21	noun		; peasant at the tavern
+SOLDI	22	noun		; soldier at the pharaoh's palace
 ;
 LAMP	50	noun		; an oil lamp
 JUG	51	noun		; the water/beer jug
@@ -226,6 +227,8 @@ DRINK	32	verb
 EAT	33	verb
 PRAY	34	verb
 WORSH	34	verb
+KILL	35	verb
+ATTAC	35	verb
 ;                               Adjectives
 SMALL   2       adjective
 BIG     3       adjective
@@ -437,19 +440,19 @@ Marketplace
 /7
 Tavern
 /8
-Path
+Stone path
 /9
 Temple of Soukhos
 /10
 Inside the Temple
 /11
-Entrance
+Palace entrance
 /12
-Palace
+At the palace
 /13
-Path
+Barren path
 /14
-Lake shore
+By the lake shore
 /15
 Lake Moeris
 /16
@@ -459,15 +462,17 @@ Inside the Temple
 /18
 Hidden room
 /19
-Path
+Barren path
 /20
 East road
 /21
+Path by the lake
+/22
 \/12
 ;
 ; Examine messages
 ;
-#define mExam 22
+#define mExam 23
 /mExam
 You do not see anything remarkable.
 /mExam+1
@@ -515,6 +520,20 @@ priestess in the village, you know they had their hopes on you.
 
 
 And somehow, you failed them..
+;
+; description messages
+;
+#define mSold mInfo+3
+/mSold
+A soldier is guarding the entrance gate.
+/mSold+1
+The soldier says: 
+/mSold+2
+The soldier blocks your way.
+/mSold+3
+"Where do you think you are going?" 
+/mSold+4
+"How dare you speak to me, you filthy peasant!"
 ;------------------------------------------------------------------------------
 /OTX    ;Object Texts
 /gown
@@ -536,7 +555,6 @@ a piece of dried meat
 ;------------------------------------------------------------------------------
 /LTX    ;Location Texts
 /0
-
 
 #if PC
                The Priestess of Sobek
@@ -560,15 +578,18 @@ to the city of Shedet, your destination..
 /1
 ; inside the bag
 /2
-Shedet, the old city, lies in front of you.
+Shedet, the prosperous city, lies in front of you. You can enter
+the city to the west, or go back to the main east road.
 /3
 The city of Shedet, where its busy inhabitants jostle and bustle
-about their business.
+about their business. From here you can hear the noise coming from
+the busy market in the south.
 /4
 This street is less crowded and more colourful. The street continues
 to the north-west and opens up into a square.
 /5
-A small, secluded and pleasantly empty square.
+A small, secluded and pleasantly empty square. You can hear the noise
+from the neighbouring streets coming from the south-east.
 /6
 Rows of stalls with signs proclaiming the goods they sell, the
 shopkeepers shouting at everyone.
@@ -576,7 +597,7 @@ shopkeepers shouting at everyone.
 A tavern furnished with mats and stools, where customers sitting
 side-by-side drink beer and wine.
 /8
-A clean path that leads to the pharaoh's palace.
+This clean path, paved with stone slabs, leads south to the pharaoh's palace.
 /9
 A stunningly beautiful temple, dedicated to the Son of Soukhos.
 /10
@@ -590,13 +611,13 @@ This is an north-south path that wanders between the outskirts of
 the town and lake Moeris.
 /14
 The lake extends into the background, in the middle of the otherwise
-desolate desert. A dusty path leads to the west to a temple.
+desolate desert. A dusty path leads west to a temple.
 /15
 Swimming in the calm waters of lake Moeris.
 /16
-The entrance to the temple features large stone pillars, which
-support a roof of huge stone slabs. A path to the east descends
-to the lakeshore.
+This seems to be a minor temple, its entrance featuring large stone
+pillars which support a roof of huge stone slabs. A path to the east
+descends to the lakeshore.
 /17
 The interior of the temple is decorated with texts and reliefs,
 which refer to cultic liturgies.
@@ -608,8 +629,11 @@ room, dedicated to the god Sobek.
 This is an north-south path that wanders between lake Moeris and the
 outskirts of the town.
 /20
-This is the road that leads towards the Nile river, to the east, where
+This is the road that leads towards the valley of the Nile, to the east, where
 your journey started.
+/21
+This narrow path in the dirt leads west to a small and simple temple on the
+top of a hill.
 ;------------------------------------------------------------------------------
 /CON    ;Connections
 /0
@@ -626,6 +650,7 @@ E 3
 NW 5
 /5
 SE 4
+W 13
 N 13
 /6
 N 3
@@ -653,12 +678,13 @@ S 5
 N 19
 /14
 N 15
-W 16
+W 21
 S 19
 /15
 S 14
 /16
-E 14
+E 21
+D 21
 W 17
 /17
 E 16
@@ -670,6 +696,10 @@ N 14
 S 13
 /20
 W 2
+/21
+E 14
+W 16
+UP 16
 ;------------------------------------------------------------------------------
 /OBJ    ;Object Definitions
 ;obj  		starts  weight  c w  5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0    noun	adjective
@@ -789,6 +819,12 @@ _       _       NEWLINE
 ;_       _       PRESENT 0               ;If the light source is present...
 ;                LISTOBJ                 ;List the objects
 
+; Soldier there?
+
+_	_	AT	11
+		NEWLINE
+		MESSAGE	mSold		; An egyptian soldier is here
+
 ; End game
 _	_	AT	20		; long path towards the Nile
 		NOTZERO	65		; Is Nebet a priest?
@@ -807,6 +843,17 @@ I       _       SYSMESS 9
                 SYSMESS 10
                 LISTAT  WORN
                 DONE
+; Entering the palace
+
+_	UP	AT	11
+		ZERO	65		; Not a priestess yet
+		MESSAGE	mSold+2		; Soldier blocks the way
+		NEWLINE
+		MES	mSold+1		; the soldier says
+		MESSAGE	mSold+3		; "where do you think you're going?"
+		DONE
+
+; Finishing the game
 
 _	EAST	AT	20
 		NOTZERO	65		; Nebet is a priestess
@@ -894,6 +941,7 @@ _       _       RESET                   ; Set objects to start location & Flag 1
                 SET     CPNoun
                 SET     CPAdject
 		LET	53	64	; object lists printed as sentences.
+		LET	67	11	; soldier location - not needed actually
 		TIME	60	1
                 GOTO    2               ; Main game
 
@@ -915,7 +963,7 @@ _	_	WINDOW	2
                 PRINTAT 0 48
 #endif
                 PRINT   Score
-                MES     21		; "/12"
+                MES     22		; "/12"
 
 ;------------------------------------------------------------------------------
 
