@@ -700,17 +700,19 @@ _       _       WINDOW  0               ; Select graphics window
 _       _       PICTURE [Player]        ; If there is a picture, Load it
                 DISPLAY [DarkF]         ; & Display it if not dark, else CLS
 
+_	_	WINDOW	2
+		CLS
+		PROCESS	7		; Status stuff
+
 _       _       WINDOW  1
 		WINAT	2	0
+		CLS
                 NOTZERO DarkF           ; Dark
                 SYSMESS 0
 
 _       _       ZERO    DarkF
-		CLS
                 DESC    [Player]        ; Doesn't exit loop now
 ;		NEWLINE
-
-_	_	PROCESS	7		; Status stuff
 
 _       _       PROCESS 3
 
@@ -892,6 +894,7 @@ _       _       RESET                   ; Set objects to start location & Flag 1
                 SET     CPNoun
                 SET     CPAdject
 		LET	53	64	; object lists printed as sentences.
+		TIME	60	1
                 GOTO    2               ; Main game
 
 ;------------------------------------------------------------------------------
@@ -899,6 +902,7 @@ _       _       RESET                   ; Set objects to start location & Flag 1
 /PRO 7 ; print status
 
 _	_	WINDOW	2
+;		CLS
 		WINAT	0	0
 		MES	[38]
 #if SPE
@@ -912,7 +916,6 @@ _	_	WINDOW	2
 #endif
                 PRINT   Score
                 MES     21		; "/12"
-		WINDOW	1
 
 ;------------------------------------------------------------------------------
 
@@ -970,17 +973,16 @@ EXAMI	_	MESSAGE	mExam	; Nothing of interest
 WORSH	_	ZERO	65		; not yet a priest
 		AT	18		; at the secret chamber
 		MESSAGE	mAction
-		PAUSE	250
+;		PAUSE	250
 		NEWLINE
 		MESSAGE	mAction+1
 		SET	65		; Nebet accepted as a priest
 		PLUS	Score	2	; deux points
 		PROCESS	7
+		WINDOW	1
 		DONE
 
 WORSH	_	NOTAT	15		; not while swimming
 		MESSAGE	mAction
 		DONE
-
-
 
