@@ -16,6 +16,7 @@
 #define jugfull		jugempty+1
 #define	board		jugfull+1
 #define	meat		board+1
+#define bracelet	meat+1
 ;
 ;
 ;
@@ -182,6 +183,7 @@ EVERY   20      noun
 ;
 PEASA	21	noun		; peasant at the tavern
 SOLDI	22	noun		; soldier at the pharaoh's palace
+SHOPK	23	noun		; shopkeeper at the market
 ;
 LAMP	50	noun		; an oil lamp
 JUG	51	noun		; the water/beer jug
@@ -198,6 +200,7 @@ CROCO	59	noun		; lake and temple
 SOBEK	60	noun		; god of much power
 MEAT	61	noun		; piece of dried meat
 ALTAR	62	noun		; in the hidden room
+BRACEL	63	noun		; a bead bracelet
 ;
 ;                       Verbs
 ;
@@ -346,7 +349,6 @@ More...
 
 >\s
 /34 ;*Spare
- al\s
 /35
 
 Time passes...
@@ -495,15 +497,22 @@ It is made from one piece of stone, and is probably used for worshipping ceremon
 In the bag there is 
 /mExam+10
 A coarse linen bag.
+/mExam+11
+A piece of unidentified dried meat.
+/mExam+12
+A bead bracelet.
 ;
 ; Action messages
 ;
-#define mAction	mExam+11
+#define mAction	mExam+13
 /mAction
 You sit down and worship Sobek-Ra, as your parents have taught you..
 /mAction+1
-A voice inside of you head talks to you: "I accept your worship and
+A voice inside your head talks to you: "I accept your worship and
 I am well pleased, Nebet the priestess."
+;
+; Random informational messages
+;
 #define mInfo mAction+2
 /mInfo
 If you return now, priestess, your journey will have been a pointless
@@ -520,10 +529,12 @@ priestess in the village, you know they had their hopes on you.
 
 
 And somehow, you failed them..
+/mInfo+3
+No one is payig attention.
 ;
-; description messages
+; PSI messages - soldier
 ;
-#define mSold mInfo+3
+#define mSold mInfo+4
 /mSold
 A soldier is guarding the entrance gate.
 /mSold+1
@@ -534,6 +545,18 @@ The soldier blocks your way.
 "Where do you think you are going?" 
 /mSold+4
 "How dare you speak to me, you filthy peasant!"
+;
+; PSI messages - shopkeeper
+;
+#define mShopk mSold+5
+/mShopk
+A shopkeeper tries to attract the attention of the passersby.
+/mShopk+1
+A friendly, round-faced man with a belly.
+/mShopk+2
+The shopkeeper says: 
+/mShopk+3
+"Hello kid!"
 ;------------------------------------------------------------------------------
 /OTX    ;Object Texts
 /gown
@@ -552,6 +575,8 @@ a jug (full)
 a senet board
 /meat
 a piece of dried meat
+/bracelet
+a bead bracelet
 ;------------------------------------------------------------------------------
 /LTX    ;Location Texts
 /0
@@ -560,7 +585,7 @@ a piece of dried meat
                The Priestess of Sobek
 #endif
 #if SPE
-           The Priestess of Sobek
+          The Priestess of Sobek
 #endif
 
 
@@ -712,6 +737,7 @@ UP 16
 /jugfull      	bag	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    JUG	FULL
 /board      	7	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BOARD	_
 /meat      	6	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    MEAT	_
+/bracelet      	18	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BRACE	_
 ;------------------------------------------------------------------------------
 /PRO 0       ;Main Location Loop
 
@@ -730,12 +756,12 @@ _       _       WINDOW  0               ; Select graphics window
 _       _       PICTURE [Player]        ; If there is a picture, Load it
                 DISPLAY [DarkF]         ; & Display it if not dark, else CLS
 
-_	_	WINDOW	2
-		CLS
-		PROCESS	7		; Status stuff
+;_	_	WINDOW	2
+;		CLS
+_	_	PROCESS	7		; Status stuff
 
 _       _       WINDOW  1
-		WINAT	2	0
+;		WINAT	2	0
 		CLS
                 NOTZERO DarkF           ; Dark
                 SYSMESS 0
@@ -821,9 +847,15 @@ _       _       NEWLINE
 
 ; Soldier there?
 
-_	_	AT	11
+_	_	AT	11		; Palace entrance
 		NEWLINE
 		MESSAGE	mSold		; An egyptian soldier is here
+
+; Shopkeeper there?
+
+_	_	AT	6		; Marketplace
+		NEWLINE
+		MESSAGE	mShopk		; An egyptian soldier is here
 
 ; End game
 _	_	AT	20		; long path towards the Nile
@@ -864,6 +896,15 @@ _	EAST	AT	20
 
 _	EAST	AT	20
 		MESSAGE	mInfo+1		; something strong makes you stay
+		DONE
+
+; Talking to people
+
+SAY	SHOPK	AT	6
+		PROCESS	10		; PSI - Shopkeeper
+		DONE
+
+SAY	_	MESSAGE	mInfo+3		; no one is paying attention
 		DONE
 
 GET	ALL	NOUN2	BAG
@@ -919,9 +960,14 @@ R	_       RESTART
 ;------------------------------------------------------------------------------
 /PRO 6 ; Initialise the DAAD system
 
+_	_	WINDOW	2
+_	_	WINAT	0	0
+		WINSIZE	1	127
+		CLS
+
 _       _       WINDOW  1               ; Windows are random
 _       _       WINAT   2       0
-                WINSIZE 25      127     ; Maximum window
+                WINSIZE 23      127     ; Maximum window
                 CLS
                 DESC    0               ; Introduction
                 ANYKEY
@@ -950,20 +996,20 @@ _       _       RESET                   ; Set objects to start location & Flag 1
 /PRO 7 ; print status
 
 _	_	WINDOW	2
-;		CLS
-		WINAT	0	0
+		CLS
 		MES	[38]
 #if SPE
-                PRINTAT 0 36
+                PRINTAT	0	36
 #endif
 #if CBM64
-                PRINTAT 0 34
+                PRINTAT	0	34
 #endif
 #if PC
-                PRINTAT 0 48
+                PRINTAT	0	48
 #endif
                 PRINT   Score
                 MES     22		; "/12"
+		WINDOW	1
 
 ;------------------------------------------------------------------------------
 
@@ -1011,6 +1057,14 @@ EXAMI	BAG	PRESENT	bag
 		MESSAGE	mExam+10
 		DONE
 
+EXAMI	SHOPK	AT	6	; market
+		MESSAGE	mShopk+1
+		DONE
+
+EXAMI	MEAT	PRESENT	meat
+		MESSAGE	mExam+11
+		DONE
+
 EXAMI	_	MESSAGE	mExam	; Nothing of interest
 		DONE
 
@@ -1034,3 +1088,10 @@ WORSH	_	NOTAT	15		; not while swimming
 		MESSAGE	mAction
 		DONE
 
+;------------------------------------------------------------------------------
+
+/PRO 10 ; talking to the shop keeper
+
+_	_	PARSE	1
+		MESSAGE	mShop+2
+		DONE
