@@ -5,6 +5,7 @@
 ; 64 - 0 beer, 255 water
 ; 65 - 0 no priestess, 255 priestess
 ; 66 - 0 no talked to Pharaoh, 255 blessed by Pharaoh
+; 67 - 0 no introduced to Neb-Seni, 255 introduced
 ;------------------------------------------------------------------------------
 ; Data definitions
 ;
@@ -17,6 +18,7 @@
 #define	board		jugfull+1
 #define	meat		board+1
 #define bracelet	meat+1
+#define oPapyrus	bracelet+1
 ;
 ;
 ;
@@ -183,7 +185,8 @@ EVERY   20      noun
 ;
 PEASA	21	noun		; peasant at the tavern
 SOLDI	22	noun		; soldier at the pharaoh's palace
-SHOPK	23	noun		; shopkeeper at the market
+MERCH	23	noun		; merchant at the market
+NEBSE	23	noun		; merchant at the market, Neb-Seni
 ;
 LAMP	50	noun		; an oil lamp
 JUG	51	noun		; the water/beer jug
@@ -201,6 +204,10 @@ SOBEK	60	noun		; god of much power
 MEAT	61	noun		; piece of dried meat
 ALTAR	62	noun		; in the hidden room
 BRACEL	63	noun		; a bead bracelet
+NAME	64	noun		; conversation stuff
+PAPYR	65	noun		; a sealed roll of papyrus
+LETTE	65	noun		; a sealed roll of papyrus
+ROLL	65	noun		; a sealed roll of papyrus
 ;
 ;                       Verbs
 ;
@@ -232,6 +239,7 @@ PRAY	34	verb
 WORSH	34	verb
 KILL	35	verb
 ATTAC	35	verb
+HELP	36	verb
 ;                               Adjectives
 SMALL   2       adjective
 BIG     3       adjective
@@ -501,10 +509,12 @@ A coarse linen bag.
 A piece of unidentified dried meat.
 /mExam+12
 A bead bracelet.
+/mExam+13
+A sealed roll of papyrus.
 ;
 ; Action messages
 ;
-#define mAction	mExam+13
+#define mAction	mExam+14
 /mAction
 You sit down and worship Sobek-Ra, as your parents have taught you..
 /mAction+1
@@ -530,7 +540,7 @@ priestess in the village, you know they had their hopes on you.
 
 And somehow, you failed them..
 /mInfo+3
-No one is payig attention.
+No one is paying attention.
 ;
 ; PSI messages - soldier
 ;
@@ -546,17 +556,25 @@ The soldier blocks your way.
 /mSold+4
 "How dare you speak to me, you filthy peasant!"
 ;
-; PSI messages - shopkeeper
+; PSI messages - merchant
 ;
-#define mShopk mSold+5
-/mShopk
-A shopkeeper tries to attract the attention of the passersby.
-/mShopk+1
+#define mMerchant mSold+5
+/mMerchant
+A merchant tries to attract the attention of the passersby.
+/mMerchant+1
 A friendly, round-faced man with a belly.
-/mShopk+2
-The shopkeeper says: 
-/mShopk+3
+/mMerchant+2
+The merchant says: 
+/mMerchant+3
 "Hello kid!"
+/mMerchant+4
+The merchant does not seem to understand you.
+/mMerchant+5
+"My name is Nebseni, trader and seller."
+/mMerchant+6
+"You look like someone that can be trusted." 
+/mMerchant+7
+"Could you do me a favour and bring this to the tavern owner?"
 ;------------------------------------------------------------------------------
 /OTX    ;Object Texts
 /gown
@@ -577,6 +595,8 @@ a senet board
 a piece of dried meat
 /bracelet
 a bead bracelet
+/oPapyrus
+a sealed roll of papyrus
 ;------------------------------------------------------------------------------
 /LTX    ;Location Texts
 /0
@@ -617,10 +637,10 @@ A small, secluded and pleasantly empty square. You can hear the noise
 from the neighbouring streets coming from the south-east.
 /6
 Rows of stalls with signs proclaiming the goods they sell, the
-shopkeepers shouting at everyone.
+merchants and traders shouting at everyone.
 /7
-A tavern furnished with mats and stools, where customers sitting
-side-by-side drink beer and wine.
+The tavern is actually more like a tent furnished with mats and stools,
+where customers sitting side-by-side drink beer and wine.
 /8
 This clean path, paved with stone slabs, leads south to the pharaoh's palace.
 /9
@@ -738,6 +758,7 @@ UP 16
 /board      	7	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BOARD	_
 /meat      	6	1       _ _  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    MEAT	_
 /bracelet      	18	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    BRACE	_
+/oPapyrus      	252	1       _ Y  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    PAPYR	_
 ;------------------------------------------------------------------------------
 /PRO 0       ;Main Location Loop
 
@@ -851,11 +872,11 @@ _	_	AT	11		; Palace entrance
 		NEWLINE
 		MESSAGE	mSold		; An egyptian soldier is here
 
-; Shopkeeper there?
+; merchant there?
 
 _	_	AT	6		; Marketplace
 		NEWLINE
-		MESSAGE	mShopk		; An egyptian soldier is here
+		MESSAGE	mMerchant		; An egyptian soldier is here
 
 ; End game
 _	_	AT	20		; long path towards the Nile
@@ -900,8 +921,8 @@ _	EAST	AT	20
 
 ; Talking to people
 
-SAY	SHOPK	AT	6
-		PROCESS	10		; PSI - Shopkeeper
+SAY	MERCH	AT	6
+		PROCESS	10		; PSI - merchant
 		DONE
 
 SAY	_	MESSAGE	mInfo+3		; no one is paying attention
@@ -942,9 +963,9 @@ R       _       RESTART
 QUIT    _       QUIT
                 END
 
-QUIT    _       DONE                    ;Not like QUIT on PAW
+QUIT    _       DONE                    ; Not like QUIT on PAW
 
-SAVE    _       SAVE    0               ;ditto
+SAVE    _       SAVE    0               ; ditto
                 RESTART
 
 LOAD    _       LOAD    0
@@ -953,7 +974,7 @@ LOAD    _       LOAD    0
 RAMSA   _       RAMSAVE
                 RESTART
 
-RAMLO   _       RAMLOAD 255             ;Reload all flags
+RAMLO   _       RAMLOAD 255             ; Reload all flags
                 RESTART
 
 R	_       RESTART
@@ -988,6 +1009,7 @@ _       _       RESET                   ; Set objects to start location & Flag 1
                 SET     CPAdject
 		LET	53	64	; object lists printed as sentences.
 		LET	67	11	; soldier location - not needed actually
+		LET	100	63
 		TIME	60	1
                 GOTO    2               ; Main game
 
@@ -1017,18 +1039,18 @@ _	_	WINDOW	2
 
 EXAMI	JUG	CARRIED	jugfull		; jug
 		ZERO	64		; beer?
-		MES	mExam+1	; the jug contains
-		MESSAGE	mExam+3	; beer
+		MES	mExam+1		; the jug contains
+		MESSAGE	mExam+3		; beer
 		DONE
 
 EXAMI	JUG	CARRIED	jugfull		; must be water then
-		MES	mExam+1	; the jug contains
-		MESSAGE	mExam+2	; water
+		MES	mExam+1		; the jug contains
+		MESSAGE	mExam+2		; water
 		DONE
 
 EXAMI	JUG	CARRIED	jugempty	; must be water then
-		MES	mExam+1	; the jug contains
-		MESSAGE	mExam+7	; nothing
+		MES	mExam+1		; the jug contains
+		MESSAGE	mExam+7		; nothing
 		DONE
 
 EXAMI	SANDA	PRESENT	sandals
@@ -1049,7 +1071,7 @@ EXAMI	ALTAR	AT	18		; hidden room
 
 EXAMI	BAG	PREP	IN
 		PRESENT	bag
-		MES	mExam+9	; in the bag there is
+		MES	mExam+9		; in the bag there is
 		LISTAT	bag
 		DONE
 
@@ -1057,15 +1079,19 @@ EXAMI	BAG	PRESENT	bag
 		MESSAGE	mExam+10
 		DONE
 
-EXAMI	SHOPK	AT	6	; market
-		MESSAGE	mShopk+1
+EXAMI	MERCH	AT	6		; market
+		MESSAGE	mMerchant+1
 		DONE
 
 EXAMI	MEAT	PRESENT	meat
 		MESSAGE	mExam+11
 		DONE
 
-EXAMI	_	MESSAGE	mExam	; Nothing of interest
+EXAMI	PAPYR	PRESENT	oPapyrus
+		MESSAGE	mExam+13
+		DONE
+
+EXAMI	_	MESSAGE	mExam		; Nothing of interest
 		DONE
 
 ;------------------------------------------------------------------------------
@@ -1090,8 +1116,21 @@ WORSH	_	NOTAT	15		; not while swimming
 
 ;------------------------------------------------------------------------------
 
-/PRO 10 ; talking to the shop keeper
+/PRO 10 ; talking to the merchant
 
 _	_	PARSE	1
-		MESSAGE	mShop+2
+		MESSAGE	mMerchant+4	; the merchant does not understand
+		DONE
+
+_	NAME	MES	mMerchant+2	; the merchant says
+		MESSAGE	mMerchant+5
+		DONE	
+
+HELP	_	MES	mMerchant+2
+		MESSAGE	mMerchant+6	; "You look like someone that can be trusted
+		NEWLINE
+		MESSAGE	mMerchant+7	; "Could you do me a favour and bring this to the tavern owner?"
+		NEWLINE
+		CREATE	oPapyrus
+		GET	oPapyrus
 		DONE
